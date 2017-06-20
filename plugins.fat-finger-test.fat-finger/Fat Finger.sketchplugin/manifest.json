@@ -1,0 +1,17 @@
+{
+    "name" : "Fat Finger",
+    "identifier" : "com.sketchapp.fat-finger-test.fat-finger",
+    "version" : "1.0.2",
+    "description" : "Pretty much the smallest example Sketch Plugin you could have.",
+    "authorEmail" : "sam@sketchapp.com",
+    "author" : "Sam Deane",
+    "commands" : [
+    {
+      "script" : "fat-finger.js",
+      "handler" : "onRun",
+      "shortcut" : "",
+      "name" : "Fat Finger!",
+      "identifier" : "fat-finger"
+    }
+  ]
+}
