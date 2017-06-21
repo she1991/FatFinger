@@ -2,15 +2,15 @@
     "name" : "Fat Finger",
     "identifier" : "com.sketchapp.fat-finger-test.fat-finger",
     "version" : "1.0.2",
-    "description" : "Pretty much the smallest example Sketch Plugin you could have.",
-    "authorEmail" : "sam@sketchapp.com",
-    "author" : "Sam Deane",
+    "description" : "A pilot test suite to lint your touch interactions against fat finger errors.",
+    "authorEmail" : "a.s@utexas.edu",
+    "author" : "Akash Shetye",
     "commands" : [
     {
       "script" : "fat-finger.js",
       "handler" : "onRun",
       "shortcut" : "",
-      "name" : "Fat Finger!",
+      "name" : "Fat Finger",
       "identifier" : "fat-finger"
     }
   ]
