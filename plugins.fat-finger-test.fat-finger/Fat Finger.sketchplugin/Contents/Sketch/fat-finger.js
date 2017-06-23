@@ -10,16 +10,16 @@ function onRun(context) {
   var page = document.selectedPage;
 
   // Now let's create a new text layer, using a large font, and a traditional value...
-  var layer = page.newText({alignment: NSTextAlignmentCenter, systemFontSize: 36, text:"Hello World"})
+  //var layer = page.newText({alignment: NSTextAlignmentCenter, systemFontSize: 36, text:"Hello World"})
 
   // Finally, lets center the view on our new layer
   // so that we can see where it is.
-  document.centerOnLayer(layer)
 
   var artboard = _getCurrentArtboard(context);
   var allBtnLayers = _getArtboardButtons(artboard);
   var heatMapGroup = _initHeatMap(context, page, artboard);
   _runFatFingerTest(context, allBtnLayers, 6, 6, 6, 6, heatMapGroup);
+  document.centerOnLayer(heatMapGroup)
 };
 
 /*
@@ -36,12 +36,12 @@ var _initHeatMap = function(context, page, targetArtboard) {
                       targetArtboard.frame().width(),
                       targetArtboard.frame().height()),
   name:"Fat Finger Heat Map"});
-  var heatMapBaseLayer = heatMapGroup.newShape({frame: new sketch.Rectangle(0, 0, targetArtboard.frame().width(), targetArtboard.frame().height()), name:"HeatMap_Base"});
-  var heatMapBaseLayerFrame = heatMapBaseLayer.frame();
-  var color = [[[[heatMapBaseLayerFrame style] fills] addNewStylePart] color]
-  [color setRed:0.5]
-  [color setGreen:1]
-  [color setBlue:1]
+    var oStyle = new sketch.Style();
+    oStyle.fills = ['#FFFFFF4F'];
+    oStyle.borders = [];
+  var heatMapBaseLayer = heatMapGroup.newShape({frame: new sketch.Rectangle(0, 0, targetArtboard.frame().width(), targetArtboard.frame().height()), style: oStyle, name:"HeatMap_Base"});
+  //var style = heatMapBaseLayer.style.addStylePartOfType(0);
+  //log(style);
   return heatMapGroup;
 }
   
@@ -144,12 +144,15 @@ _checkAndMark = function(context, btnLayer, px, py, x_positiveError, x_negativeE
 */
 _markAsFatFingerError = function(context, px, py, radius, heatMapGroup) {
   log("error " + px + " " + py);
-  var addedMark = page.newGroup({frame: new sketch.Rectangle(
-                      targetArtboard.frame().x(),
-                      targetArtboard.frame().y(),
-                      targetArtboard.frame().width(),
-                      targetArtboard.frame().height()),
-  name:"Fat Finger Heat Map"});
+  var sketch = context.api();
+  var doc = context.document;
+  var oStyle = new sketch.Style();
+  oStyle.fills = ['#FF000022'];
+  oStyle.borders = [];
+  var ovalShape = MSOvalShape.alloc().init();
+  ovalShape.frame = MSRect.rectWithRect(NSMakeRect(px-radius,py-radius,radius*2,radius*2));
+  var shapeGroup=MSShapeGroup.shapeWithPath(ovalShape);
+  heatMapGroup._addWrappedLayerWithProperties(shapeGroup,{style: oStyle},"Shape");
 }
 
 /*
@@ -170,27 +173,27 @@ var _runFatFingerTest = function(context, allLayers, x_positiveError, x_negative
       //Skip the current layer under consideration
       if(j != i){
         var py = y;
-        for(var px=x; px <= x + width; px++){
+        for(var px=x; px <= x + width; px = px+2){
           _checkAndMark(context, allLayers[j], px, py, x_positiveError, x_negativeError, y_positiveError, y_negativeError, heatMapGroup);
         }
       }
     }
     //Every point along (x->x+width, y+height)
-    for (var j=0; j < allLayers.length; j++){
+    for (var j=0; j < allLayers.length; j++)){
       //Skip the current layer under consideration
       if(j != i){
         var py = y+height;
-        for(var px=x; px < x + width; px++){
+        for(var px=x; px < x + width; px = px+2){
           _checkAndMark(context, allLayers[j], px, py, x_positiveError, x_negativeError, y_positiveError, y_negativeError, heatMapGroup);
         }
       }
     }
     //Every point along (x, y->y+height)
-    for (var j=0; j < allLayers.length; j++){
+    for (var j=0; j < allLayers.length; j++)){
       //Skip the current layer under consideration
       if(j != i){
         var px = x;
-        for(var py=y; py < y + height; py++){
+        for(var py=y; py < y + height; py = py+2){
           _checkAndMark(context, allLayers[j], px, py, x_positiveError, x_negativeError, y_positiveError, y_negativeError, heatMapGroup);
         }
       }
@@ -200,7 +203,7 @@ var _runFatFingerTest = function(context, allLayers, x_positiveError, x_negative
       //Skip the current layer under consideration
       if(j != i){
         var px = x;
-        for(var py=y; py < y + height; py++){
+        for(var py=y; py < y + height; py = py+2){
           _checkAndMark(context, allLayers[j], px, py, x_positiveError, x_negativeError, y_positiveError, y_negativeError, heatMapGroup);
         }
       }
