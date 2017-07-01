@@ -18,7 +18,7 @@ function onRun(context) {
   var artboard = _getCurrentArtboard(context);
   var allBtnLayers = _getArtboardButtons(artboard);
   var heatMapGroup = _initHeatMap(context, page, artboard);
-  _runFatFingerTest(context, allBtnLayers, 6, 6, 6, 6, heatMapGroup);
+  _runFatFingerTest(context, allBtnLayers, 10, 10, 10, 10, heatMapGroup);
   document.centerOnLayer(heatMapGroup)
 };
 
@@ -40,8 +40,6 @@ var _initHeatMap = function(context, page, targetArtboard) {
     oStyle.fills = ['#FFFFFF4F'];
     oStyle.borders = [];
   var heatMapBaseLayer = heatMapGroup.newShape({frame: new sketch.Rectangle(0, 0, targetArtboard.frame().width(), targetArtboard.frame().height()), style: oStyle, name:"HeatMap_Base"});
-  //var style = heatMapBaseLayer.style.addStylePartOfType(0);
-  //log(style);
   return heatMapGroup;
 }
   
@@ -81,26 +79,39 @@ var _checkPointInside = function(px, py) {
 */
 var _getArtboardButtons = function(targetArtboard) {
   //Array that will be returned.
-  var buttonLayers = [];
-  var allLayers = [targetArtboard layers];
-  for(var i=0; i < [allLayers count]; i++){
-    var targetLayer = [allLayers objectAtIndex:i];
-    var layerName = [targetLayer name];
-    //Check if the layer is a button, create an object and add to array
-    if(layerName.split("_")[0] == "btn") {
-      var button = {
-        buttonName :layerName,
-        x : targetLayer.frame().x(),
-        y : targetLayer.frame().y(),
-        width : targetLayer.frame().width(),
-        height : targetLayer.frame().height(),
-        checkPointInside : _checkPointInside
-      };
-      buttonLayers.push(button);
-    }
-  }
+  var buttonLayers = _getButtonsFromLayers(targetArtboard);
   return buttonLayers;
 };
+
+var _getButtonsFromLayers = function(layer) {
+	var buttonArray = [];
+	var childLayers = [layer layers];
+	for(var i=0; i < [childLayers count]; i++) {
+		var targetLayer = [childLayers objectAtIndex:i];
+		var targetLayerType = [targetLayer class];
+		if(targetLayerType == MSPage || 
+			targetLayerType == MSLayerGroup ||
+			targetLayerType == MSArtboardGroup) {
+			var buttonsOfTargetLayer = _getButtonsFromLayers(targetLayer);
+			var layerName = [targetLayer name];
+	    	//Check if the layer is a button, create an object and add to array
+		    if(layerName.split("_")[0] == "btn") {
+		    	var button = {
+			        buttonName :layerName,
+			        x : targetLayer.absoluteRect().rulerX(),
+			        y : targetLayer.absoluteRect().rulerY(),
+			        width : targetLayer.frame().width(),
+			        height : targetLayer.frame().height(),
+			        checkPointInside : _checkPointInside
+		    	};
+		    	buttonArray.push(button);
+			}
+			//Also add buttonsOfTargetLayer
+			buttonArray = buttonArray.concat(buttonsOfTargetLayer);
+		}
+	}
+	return buttonArray;
+}
 
 /*
 * Checks for point presence and draws circle on true cases
@@ -143,7 +154,6 @@ _checkAndMark = function(context, btnLayer, px, py, x_positiveError, x_negativeE
 * Actually draws a circle given a center and radius
 */
 _markAsFatFingerError = function(context, px, py, radius, heatMapGroup) {
-  log("error " + px + " " + py);
   var sketch = context.api();
   var doc = context.document;
   var oStyle = new sketch.Style();
